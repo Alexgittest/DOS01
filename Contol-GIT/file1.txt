@@ -1,4 +1,9 @@
 1
 2
 3
+<<<<<<< HEAD
 Hello
+=======
+ello
+After ello commit
+>>>>>>> f0b5e1e... After ello commit
