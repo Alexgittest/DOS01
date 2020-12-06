@@ -63,160 +63,51 @@ fi
 }
 
 checkIPRANGE() {
-   case $NUM4 in
-	   0 ) 
-		   NUM4_START=1
-		   NUM4_END=254
-		   ;;
-	   128 ) 
-		   case $IPNUM4 in
-			   [0-127] ) 
-               NUM4_START=1
-               NUM4_END=126
-				;;
-			   [128-255] )
-               NUM4_START=129
-               NUM4_END=254
-				;;
-		   esac
-		;;
-	   192 )
-		   case $IPNUM4 in
-			   [0-63] )
-				   NUM4_START=1
-				   NUM4_END=62
-				;;
-			   [64-127] ) 
-				   NUM4_START=65
-				   NUM4_END=126
-				;;
-			   [128-191] ) 
-				   NUM4_START=129
-				   NUM4_END=190
-				;;
-			   [192-255] ) 
-				   NUM4_START=193
-				   NUM4_END=254
-				;;
-		   esac
-		;;			
-	   224)
-		   case $IPNUM4 in
-			   [0-31] )
-				   NUM4_START=1
-				   NUM4_END=30
-				;;
-			   [32-63] )
-				   NUM4_START=33
-				   NUM4_END=62
-				;;
-			   [64-95] )
-				   NUM4_START=65
-				   NUM4_END=94
-				;;
-			   [96-127] ) 
-				   NUM4_START=97
-				   NUM4_END=126
-				;;
-			   [128-159] ) 
-				   NUM4_START=129
-				   NUM4_END=158
-				;;
-			   [160-191] ) 
-			   	NUM4_START=161
-				   NUM4_END=190
-				;;
-			   [192-223] ) 
-				   NUM4_START=193
-				   NUM4_END=222
-				;;	
-			   [224-255] ) 
-			   	NUM4_START=225
-				   NUM4_END=254
-				;;
-		   esac
-		;;				
-	   240)
-		   case $IPNUM4 in
-			   [0-15] )
-			   	NUM4_START=1
-			   	NUM4_END=14
-				;;
-			   [16-31] )
-			   	NUM4_START=17
-			   	NUM4_END=30
-				;;
-			   [32-47] )
-			   	NUM4_START=33
-			   	NUM4_END=46
-				;;
-		   	[48-63] )
-			   	NUM4_START=49
-			   	NUM4_END=62
-				;;
-			   [64-79] )
-			   	NUM4_START=65
-			   	NUM4_END=78
-				;;
-			   [80-95] ) 
-			   	NUM4_START=81
-			   	NUM4_END=94
-				;;
-			   [96-111] ) 
-			   	NUM4_START=97
-			   	NUM4_END=110
-				;;
-			   [112-127] ) 
-			   	NUM4_START=113
-			   	NUM4_END=126
-				;;
-			   [128-143] ) 
-			   	NUM4_START=129
-			   	NUM4_END=142
-				;;
-			   [144-159] ) 
-			   	NUM4_START=145
-			   	NUM4_END=158
-				;;
-			   [160-175] ) 
-			   	NUM4_START=161
-			   	NUM4_END=174
-				;;
-		   	[176-191] ) 
-			   	NUM4_START=177
-			   	NUM4_END=190
-				;;
-			   [192-207] ) 
-			   	NUM4_START=193
-			   	NUM4_END=206
-				;;
-			   [208-223] ) 
-			   	NUM4_START=209
-			   	NUM4_END=222
-				;;		
-			   [224-255] ) 
-			   	NUM4_START=225
-			   	NUM4_END=254
-				;;
-			   [192-207] ) 
-				   NUM4_START=193
-			   	NUM4_END=206
-				;;	
-			   [208-223] ) 
-			   	NUM4_START=209
-			   	NUM4_END=222
-				;;		
-			   [224-239] ) 
-			   	NUM4_START=225
-			   	NUM4_END=238
-				;;
-			   [240-255] ) 
-			   	NUM4_START=241
-			   	NUM4_END=254
-				;;
-		   esac
-		;;
-	esac
+case $NUM4 in
+           0 ) NUM4_START=1;NUM4_END=254;;
+           128 ) 
+                case 1 in
+                    $(($IPNUM4>=0 && $IPNUM4<=127)) ) NUM4_START=1;NUM4_END=126;;
+                    $(($IPNUM4>=128 && $IPNUM4<=255)) )NUM4_START=129;NUM4_END=254;;
+                   esac;;
+           192 )
+                case 1 in
+                    $(($IPNUM4>=0 && $IPNUM4<=63)) ) NUM4_START=1;NUM4_END=62;;
+                    $(($IPNUM4>=64 && $IPNUM4<=127)) ) NUM4_START=65;NUM4_END=126;;
+                    $(($IPNUM4>=128 && $IPNUM4<=191)) ) NUM4_START=129;NUM4_END=190;;
+                    $(($IPNUM4>=192 && $IPNUM4<=255)) ) NUM4_START=193;NUM4_END=254;;
+                   esac;;
+           224)
+                case 1 in
+                    $(($IPNUM4>=0 && $IPNUM4<=31)) ) NUM4_START=1;NUM4_END=30;;
+                    $(($IPNUM4>=32 && $IPNUM4<=63)) )NUM4_START=33;NUM4_END=62;;
+                    $(($IPNUM4>=64 && $IPNUM4<=95)) )NUM4_START=65;NUM4_END=94;;
+                    $(($IPNUM4>=96 && $IPNUM4<=127)) )NUM4_START=97;NUM4_END=126;;
+                    $(($IPNUM4>=128 && $IPNUM4<=159)) ) NUM4_START=129;NUM4_END=158;;
+                    $(($IPNUM4>=160 && $IPNUM4<=191)) ) NUM4_START=161;NUM4_END=190;;
+                    $(($IPNUM4>=192 && $IPNUM4<=223)) ) NUM4_START=193;NUM4_END=222;;
+                    $(($IPNUM4>=224 && $IPNUM4<=255)) ) NUM4_START=225;NUM4_END=254;;
+                   esac;;
+           240)
+                   case 1 in
+                    $(($IPNUM4>=0 && $IPNUM4<=15)) )NUM4_START=1;NUM4_END=14;;
+                    $(($IPNUM4>=16 && $IPNUM4<=31)) )NUM4_START=17;NUM4_END=30;;
+                    $(($IPNUM4>=32 && $IPNUM4<=47)) )NUM4_START=33;NUM4_END=46;;
+                    $(($IPNUM4>=48 && $IPNUM4<=63)) )NUM4_START=49;NUM4_END=62;;
+                    $(($IPNUM4>=64 && $IPNUM4<=79)) )NUM4_START=65;NUM4_END=78;;
+                    $(($IPNUM4>=80 && $IPNUM4<=95)) )NUM4_START=81;NUM4_END=94;;
+                    $(($IPNUM4>=96 && $IPNUM4<=111)))NUM4_START=97;NUM4_END=110;;
+                    $(($IPNUM4>=112 && $IPNUM4<=127)))NUM4_START=113;NUM4_END=126;;
+                    $(($IPNUM4>=128 && $IPNUM4<=143)))NUM4_START=129;NUM4_END=142;;
+                    $(($IPNUM4>=144 && $IPNUM4<=159)))NUM4_START=145;NUM4_END=158;;
+                    $(($IPNUM4>=160 && $IPNUM4<=175)))NUM4_START=161;NUM4_END=174;;
+                    $(($IPNUM4>=176 && $IPNUM4<=191)))NUM4_START=177;NUM4_END=190;;
+                    $(($IPNUM4>=192 && $IPNUM4<=207)))NUM4_START=193;NUM4_END=206;;
+                    $(($IPNUM4>=208 && $IPNUM4<=223)))NUM4_START=209;NUM4_END=222;;
+                    $(($IPNUM4>=224 && $IPNUM4<=239)))NUM4_START=225;NUM4_END=238;;
+                    $(($IPNUM4>=240 && $IPNUM4<=255)))NUM4_START=241;NUM4_END=254;;
+                   esac;;
+        esac
 }
 
 while  (( $IPNOTCORRECT== 1 ))
@@ -233,17 +124,20 @@ read MASK
 checkMASK $MASK
 done
 
-NUM4_START=135
-NUM4_END=137
-#checkIPRANGE $IPNUM4 $NUM4
+checkIPRANGE $IPNUM4 $NUM4
+
+echo "SCAN start IP ---"$IPNUM1"."$IPNUM2"."$IPNUM3"."$NUM4_START
+echo "Scan end IP----"$IPNUM1"."$IPNUM2"."$IPNUM3"."$NUM4_END
 
 for (( i=$NUM4_START;$i<$NUM4_END;i=$i+1))
  do
-ping_result=`ping -c 3 $IPNUM1"."$IPNUM2"."$IPNUM3"."$i | grep received | cut -d , -f2 | cut -d ' ' -f2`
-if (( $ping_result == 3))
- then 
-  scp -i /root/.ssh/id_rsa /root/service_for_hw22/* root@$IPNUM1"."$IPNUM2"."$IPNUM3"."$i:/etc/systemd/system
-  echo "ping OK" 
-  ssh -i /root/.ssh/id_rsa root@$IPNUM1"."$IPNUM2"."$IPNUM3"."$i 'systemctl start testservice.service' 
+ ping_result=`ping -c 3 $IPNUM1"."$IPNUM2"."$IPNUM3"."$i | grep received | cut -d , -f2 | cut -d ' ' -f2`
+ if (( $ping_result == 3))
+  then
+   echo $IPNUM1"."$IPNUM2"."$IPNUM3"."$i"-----ping OK" 
+   #scp -i /root/.ssh/id_rsa /root/service_for_hw22/* root@$IPNUM1"."$IPNUM2"."$IPNUM3"."$i:/etc/systemd/system
+   #ssh -i /root/.ssh/id_rsa root@$IPNUM1"."$IPNUM2"."$IPNUM3"."$i 'systemctl start testservice.service' 
+  else
+   echo $IPNUM1"."$IPNUM2"."$IPNUM3"."$i"-----ping NOT OK"
 fi
 done
