@@ -1,0 +1,29 @@
+Добавить сети:
+docker network create --driver bridge my-net1
+docker network create --driver bridge my-net2
+
+
+Посмотреть как называются сетевые адаптеры
+
+ifconfig | grep br- | cut -d : -f1
+br-59407388d1d7
+br-82e233cdbe5d
+
+
+Добавить правило в iptables для интереконнекта между созданными сетями Docker т.к. по умолчанию взаимодейсиве запрещено
+
+sudo iptables -I DOCKER-ISOLATION-STAGE-2 -o br-59407388d1d7 -i br-82e233cdbe5d -j ACCEPT
+sudo iptables -I DOCKER-ISOLATION-STAGE-2 -o br-82e233cdbe5d -i br-59407388d1d7 -j ACCEPT
+
+
+Создать два контейнера с базой MySQL и Adminer
+docker run --name mysql-test -e MYSQL_ROOT_PASSWORD=password1 --link adminer:adminer --network my-net1 -d mysql 
+docker run --link mysql-test:db --network my-net2 adminer
+
+Затем 
+docker network inspect my-net1
+docker network inspect my-net2
+
+Посмотреть какие адреса выдались контейнерам и зайти по web на adminer контейнер порт 8080 и
+проверить подключение к базе 
+

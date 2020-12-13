@@ -1,0 +1,2 @@
+docker build -t nginx-test:v1 .
+docker run -p 8080:80  nginx-test:v1

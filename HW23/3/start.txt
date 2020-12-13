@@ -1,0 +1,5 @@
+docker build -t test1:v1  .
+
+docker run --network=my-net2 test1:v1
+
+В Docker файде нельзя задать сеть

@@ -1,0 +1,48 @@
+git clone https://github.com/dockersamples/example-voting-app.git
+
+cd example-voting-app/
+
+docker-compose up
+
+
+
+Если не использовать docker-compose то:
+При этом используем созданные и скачанные образы. Если образы не созданы тогда в скаченном из git запустить Dockerfile. 
+
+vote
+
+docker run -d --name vote -p 5000:80 --mount type=bind,source=/TEST/docker/compose/example-voting-app/vote,target=/app example-voting-app_vote:latest python app.py
+
+docker network connect example-voting-app_back-tier aaf1bf8e3dc9
+
+docker network connect example-voting-app_front-tier aaf1bf8e3dc9
+
+result
+
+docker run -d --name result -p 5001:80 -p 5858:5858 --mount type=bind,source=/TEST/docker/compose/example-voting-app/result,target=/app example-voting-app_result:latest nodemon server.js
+
+docker network connect example-voting-app_back-tier result
+
+docker network connect example-voting-app_front-tier result
+
+redis
+
+docker run -d --name redis -p 6379:6379 redis:alpine
+
+docker network connect example-voting-app_back-tier redis
+
+
+
+db
+
+docker run -d --name db --mount source=example-voting-app_db-data,target=/var/lib/postgresql/data -e POSTGRES_USER:postgres -e POSTGRES_PASSWORD:postgres  postgres:9.4
+
+docker network connect example-voting-app_back-tier db
+
+
+worker
+
+docker run -d --name worker example-voting-app_worker:latest
+
+docker network connect example-voting-app_back-tier worker
+
