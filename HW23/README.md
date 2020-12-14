@@ -2,18 +2,23 @@
 **1.Можно ли указать в докерфайле на базе ubuntu entrypoint sleep 20 ?**
 
 Можно задав:
+
 FROM ubuntu:20.04
+
 ENTRYPOINT ["sleep", "20"]
 
    или
 
 FROM ubuntu:20.04
+
 ENTRYPOINT sleep 20
 
-**2.Создать два контейнера, с приложением и базой в разных подсетях, организовать взаимодействие. **
+**2.Создать два контейнера, с приложением и базой в разных подсетях, организовать взаимодействие.**
 
 Добавить сети:
+
   docker network create --driver bridge my-net1
+  
   docker network create --driver bridge my-net2
 
 
@@ -27,15 +32,19 @@ ENTRYPOINT sleep 20
 Добавить правило в iptables для интереконнекта между созданными сетями Docker т.к. по умолчанию взаимодейсиве запрещено
 
   sudo iptables -I DOCKER-ISOLATION-STAGE-2 -o br-59407388d1d7 -i br-82e233cdbe5d -j ACCEPT
+  
   sudo iptables -I DOCKER-ISOLATION-STAGE-2 -o br-82e233cdbe5d -i br-59407388d1d7 -j ACCEPT
 
 
 Создать два контейнера с базой MySQL и Adminer
+
   docker run --name mysql-test -e MYSQL_ROOT_PASSWORD=password1 --link adminer:adminer --network my-net1 -d mysql 
+  
   docker run --link mysql-test:db --network my-net2 adminer
 
 Затем 
   docker network inspect my-net1
+  
   docker network inspect my-net2
 
 Посмотреть какие адреса выдались контейнерам и зайти по web на adminer контейнер порт 8080 и
@@ -44,8 +53,11 @@ ENTRYPOINT sleep 20
 **3.Написать Dockerfile с приложением и разместить его в изолированной сети. И можно ли в Dockerfile создать сеть**
 
 ---DOCKERFILE---
+
   FROM nginx:latest
+  
   RUN apt update && apt install -y iputils-ping net-tools
+  
   CMD ["ping","-c","5","www.google.com"]
 
 Для сборки и запуска:
@@ -115,16 +127,23 @@ docker network connect example-voting-app_back-tier worker
 
 
 ---СБОРКА:---
+
   docker build -t nginx-test:v1 .
+  
   docker run -p 8080:80  nginx-test:v1
 
 ---DOCKERFILE---
+
   FROM ubuntu:20.04 AS builder
+  
   COPY . /tmp
+  
   RUN /tmp/1.sh >> /tmp/1.html
 
   FROM nginx:latest AS nginx-test
+  
   COPY --from=builder /tmp/1.html /usr/share/nginx/html/index.html
+  
   RUN nginx
 
 
