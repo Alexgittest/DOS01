@@ -1,0 +1,4 @@
+FROM nginx:latest
+LABEL BUILD_DATE="2020-12-15"
+ARG BUILD_DATE
+RUN nginx
