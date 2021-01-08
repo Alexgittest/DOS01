@@ -1,0 +1,18 @@
+
+all:
+ vars:
+  ansible_user: alex
+  ansible_ssh_private_key_file: /home/alex/.ssh/id_rsa
+dev:
+  hosts:
+    CentosVM2:
+     ansible_host: 192.168.226.136
+     ansible_python_interpreter: /usr/libexec/platform-python3.6
+    CentosVM3:
+     ansible_host: 192.168.226.141
+prod:
+  hosts:
+    CentosVM4:
+     ansible_host: 192.168.226.142
+    CentosVM5:
+     ansible_host: 192.168.226.143

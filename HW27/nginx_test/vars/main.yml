@@ -1,0 +1,11 @@
+---
+# vars file for nginx_test
+destination_folder: /etc/nginx
+ansible_sudo_pass: alex
+error_pages:
+ - 500
+ - 502
+ - 503
+ - 504
+ - /50x.html
+
