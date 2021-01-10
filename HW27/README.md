@@ -3,6 +3,9 @@
 ansible-galaxy init nginx_test - инициализация роли
 
 ansible.cfg - конфигурационный файл Ansible
+
 hosts - Inventory файл
+
 install_nginx.yml - плейбук для установки роли nginx_test
+
 nginx_test/ - каталог с ролью
