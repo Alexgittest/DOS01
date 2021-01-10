@@ -1,0 +1,11 @@
+---
+ - name: Install nginx
+   yum: name=nginx state=present
+
+ - name: Start service nginx, if not started
+   service:
+     name: nginx
+     state: started
+
+ - name: generating nginx.conf
+   template: src=nginx.j2 dest={{destination_folder}}/nginx.conf mode=0544
