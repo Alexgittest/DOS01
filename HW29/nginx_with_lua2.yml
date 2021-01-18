@@ -1,0 +1,138 @@
+---
+ - name: Install NGINX with lua
+   hosts: CentosVM2
+   become: yes
+
+   vars:
+    - tmp_folder: /tmp/for_install_lua
+    - tmp_folder_luajit: luajit2
+    - tmp_folder_ngx_devel_kit: ngx_devel_kit
+    - tmp_folder_lua_nginx_module: lua-nginx-module
+    - tmp_folder_nginx: nginx
+
+   tasks:
+    - name: Copy using inline content
+      ansible.builtin.copy:
+        dest: /etc/yum.repos.d/nginx.repo
+        content: |
+          [nginx-stable]
+          name=nginx stable repo
+          baseurl=http://nginx.org/packages/centos/$releasever/$basearch/
+          gpgcheck=1
+          enabled=1
+          gpgkey=https://nginx.org/keys/nginx_signing.key
+          module_hotfixes=true'
+
+## установка nginx,git и программ для сборки ПО из исходников 
+
+    - name: Install packages
+      yum: 
+       name:
+        - nginx
+        - git
+        - gcc
+        - openssl-devel
+        - pcre-devel
+        - "@Development tools" 
+       state: latest
+
+## Создание директорий для загрузки нужных модулей
+
+    - name: Create tmp folder
+      file: 
+        path: "{{tmp_folder}}"
+        state: directory
+        mode: 0755
+
+    - name: Create tmp folders 
+      file: 
+        path: "{{tmp_folder}}/{{item}}"
+        state: directory
+        mode: 0755
+      loop:
+        - luajit2
+        - ngx_devel_kit
+        - lua-nginx-module
+        - nginx
+        - nginx/nginx-1.18.0
+
+## Копирование нужных модулей в соответствующие директории
+
+    - name: Git clone luajit2 repo
+      git:
+       clone: yes
+       dest: "{{tmp_folder}}/{{tmp_folder_luajit}}"
+       repo: 'https://github.com/openresty/luajit2.git'
+
+    - name: Git clone ngx_devel_kit repo
+      git:
+       clone: yes
+       dest: "{{tmp_folder}}/{{tmp_folder_ngx_devel_kit}}"
+       repo: 'https://github.com/vision5/ngx_devel_kit.git'
+
+    - name: Git clone lua-nginx-module repo
+      git:
+       clone: yes
+       dest: "{{tmp_folder}}/{{tmp_folder_lua_nginx_module}}"
+       repo: 'https://github.com/openresty/lua-nginx-module.git'           
+
+#определяем версию установленного nginx
+
+    - name: Create variable from command nginx -v
+      command: "nginx -v"
+      register: nginx_version   
+#скачиваем исходники такой же версии     
+    - name: Download nginx
+      get_url: 
+       url: "https://nginx.org/download/nginx-{{nginx_version['stderr'].split()[2].split(\"/\")[1]}}.tar.gz"
+       dest: "{{tmp_folder}}/{{tmp_folder_nginx}}"
+       mode: 744
+
+    - name: Extract nginx-1.18.0.tar.gz into /tmp/for_install_lua/nginx
+      ansible.builtin.unarchive:
+              src: "{{tmp_folder}}/{{tmp_folder_nginx}}/nginx-{{nginx_version['stderr'].split()[2].split(\"/\")[1]}}.tar.gz"
+              dest: "{{tmp_folder}}/{{tmp_folder_nginx}}"
+              remote_src: yes
+
+
+##Сборка и установка LuaJit
+
+    - name: Run make command  luajit
+      command: make
+      args:
+        chdir: "{{tmp_folder}}/{{tmp_folder_luajit}}"
+
+    - name: Run make install command  luajit
+      command: make install
+      args:
+        chdir: "{{tmp_folder}}/{{tmp_folder_luajit}}"
+
+############Сборка nginx с модулем lua
+
+##сохранение в переменной nginx_info информации о текущей сборке
+
+    - name: Create variable from command Nginx -V
+      command: "nginx -V"
+      register: nginx_info
+
+## Сборка nginx  c добавлением модуля и lua-nginx-module модуля ngx_devel_kit
+
+    - name: Run configure nginx
+      command: "./configure {{ nginx_info['stderr'].split(\"\n\")[4].split(\":\")[1] }} --add-dynamic-module={{tmp_folder}}/{{tmp_folder_ngx_devel_kit}} --add-dynamic-module={{tmp_folder}}/{{tmp_folder_lua_nginx_module}}"
+      args:
+        chdir: "{{tmp_folder}}/{{tmp_folder_nginx}}/nginx-{{nginx_version['stderr'].split()[2].split(\"/\")[1]}}"
+      register: nginx_configure_info
+      environment:
+        - LUAJIT_LIB: /usr/local/lib
+        - LUAJIT_INC: /usr/local/include/luajit-2.1
+ 
+    - name: Run make modules command  nginx
+      command: make modules
+      args:
+        chdir: "{{tmp_folder}}/{{tmp_folder_nginx}}/nginx-{{nginx_version['stderr'].split()[2].split(\"/\")[1]}}"
+
+    - name: Run make install command nginx
+      command: make install
+      args:
+        chdir: "{{tmp_folder}}/{{tmp_folder_nginx}}/nginx-{{nginx_version['stderr'].split()[2].split(\"/\")[1]}}"
+

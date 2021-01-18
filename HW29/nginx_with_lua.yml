@@ -1,0 +1,127 @@
+---
+ - name: Install NGINX with lua
+   hosts: CentosVM2
+   become: yes
+
+   tasks:
+    - name: Copy using inline content
+      ansible.builtin.copy:
+        dest: /etc/yum.repos.d/nginx.repo
+        content: |
+          [nginx-stable]
+          name=nginx stable repo
+          baseurl=http://nginx.org/packages/centos/$releasever/$basearch/
+          gpgcheck=1
+          enabled=1
+          gpgkey=https://nginx.org/keys/nginx_signing.key
+          module_hotfixes=true'
+
+## установка nginx,git и программ для сборки ПО из исходников 
+
+    - name: Install packages
+      yum: 
+       name:
+        - nginx
+        - git
+        - gcc
+        - openssl-devel
+        - pcre-devel
+        - "@Development tools" 
+       state: latest
+
+## Создание директорий для загрузки нужных модулей
+
+    - name: Create tmp folder
+      file: 
+        path: /tmp/for_install_lua
+        state: directory
+        mode: 0755
+
+    - name: Create tmp folders 
+      file: 
+        path: /tmp/for_install_lua/{{item}}
+        state: directory
+        mode: 0755
+      loop:
+        - luajit2
+        - ngx_devel_kit
+        - lua-nginx-module
+        - nginx
+        - nginx/nginx-1.18.0
+
+## Копирование нужных модулей в соответствующие директории
+
+    - name: Git clone luajit2 repo
+      git:
+       clone: yes
+       dest: /tmp/for_install_lua/luajit2
+       repo: 'https://github.com/openresty/luajit2.git'
+
+    - name: Git clone ngx_devel_kit repo
+      git:
+       clone: yes
+       dest: /tmp/for_install_lua/ngx_devel_kit
+       repo: 'https://github.com/vision5/ngx_devel_kit.git'
+
+    - name: Git clone lua-nginx-module repo
+      git:
+       clone: yes
+       dest: /tmp/for_install_lua/lua-nginx-module
+       repo: 'https://github.com/openresty/lua-nginx-module.git'	   
+
+    - name: Download nginx
+      get_url: 
+       url: "https://nginx.org/download/nginx-1.18.0.tar.gz"
+       dest: /tmp/for_install_lua/nginx
+       mode: 744	
+
+    - name: Extract nginx-1.18.0.tar.gz into /tmp/for_install_lua/nginx
+      ansible.builtin.unarchive:
+              src: /tmp/for_install_lua/nginx/nginx-1.18.0.tar.gz
+              dest: /tmp/for_install_lua/nginx/nginx-1.18.0
+              remote_src: yes
+
+
+##Сборка и установка LuaJit
+
+    - name: Run make command  luajit
+      command: make
+      args:
+        chdir: /tmp/for_install_lua/luajit2/
+
+    - name: Run make install command  luajit
+      command: make install
+      args:
+        chdir: /tmp/for_install_lua/luajit2/
+
+############Сборка nginx с модулем lua
+
+##сохранение в переменной nginx_info информации о текущей сборке
+
+    - name: Create variable from command Nginx -V
+      command: "nginx -V"
+      register: nginx_info
+
+## Сборка nginx  c добавлением модуля и lua-nginx-module модуля ngx_devel_kit
+
+    - name: Run configure nginx
+      command: "./configure {{ nginx_info['stderr'].split(\"\n\")[4].split(\":\")[1] }} --add-dynamic-module=/tmp/for_install_lua/ngx_devel_kit --add-dynamic-module=/tmp/for_install_lua/lua-nginx-module"
+      args:
+        chdir: /tmp/for_install_lua/nginx/nginx-1.18.0/nginx-1.18.0
+      register: nginx_configure_info
+      environment:
+        - LUAJIT_LIB: /usr/local/lib
+        - LUAJIT_INC: /usr/local/include/luajit-2.1
+ 
+    - name: Run make modules command  nginx
+      command: make modules
+      args:
+        chdir: /tmp/for_install_lua/nginx/nginx-1.18.0/nginx-1.18.0
+
+    - name: Run make install command nginx
+      command: make install
+      args:
+        chdir: /tmp/for_install_lua/nginx/nginx-1.18.0/nginx-1.18.0	
+
+
+
