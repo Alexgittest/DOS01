@@ -1,0 +1,52 @@
+version: "3"
+
+services:
+
+  Adminer1:
+    image: adminer:latest
+    container_name: adminer1
+    networks:
+      backend:
+       ipv4_address: 172.18.0.2
+#    ports:
+#      - "10001:8080"
+
+  Adminer2:
+    image: adminer:latest
+    container_name: adminer2
+    networks:
+      backend:
+          ipv4_address: 172.18.0.3
+#    ports:
+#      - "10002:8080"
+
+  Adminer3:
+    image: adminer:latest
+    container_name: adminer3
+    networks:
+      backend:
+        ipv4_address: 172.18.0.4
+#    ports:
+#      - "10003:8080"
+
+  nginx_lb:
+    build:
+      context: /usr/nginx-lb
+      dockerfile: Dockerfile
+    container_name: nginx_lb
+    networks:
+      backend:
+        ipv4_address: 172.18.0.5
+    ports:
+      - "80:80"
+      - "443:443"
+
+networks:
+   backend:
+     driver: bridge
+     ipam:
+        driver: default
+        config:
+         - subnet: 172.18.0.0/16
+           gateway: 172.18.0.1
+

@@ -1,0 +1,71 @@
+---
+ - name: Start nginx temp container
+   hosts: localhost
+   become: yes
+
+   vars:
+   - tmp_folder: /usr/nginx-lb # directory on remote host for store docker-compose.yml
+   - tmp_folder_local: /TEST/ansible/NGINX_LB_ADMINER # directory on local host with docker-compose.yml
+ 
+   tasks:
+    - name: Enable Docker
+      systemd:
+          name: docker
+          state: started
+
+#Создать папку на удаленном компьютере для копирования docker-compose.yml
+    - name: Create tmp folder for letsencrypt
+      file: 
+        path: "{{tmp_folder}}"
+        state: directory
+        mode: 0755
+
+#Копируем nginx.conf на удаленный компьютер        
+    - name: Copy nginx.conf to remote
+      ansible.builtin.copy:
+        src: "{{ tmp_folder_local }}\/nginx.conf"
+        dest: "{{ tmp_folder }}"
+        mode: '0644'
+#Копируем index.html на удаленный компьютер
+    - name: Copy index.html to remote
+      ansible.builtin.copy:
+        src: "{{ tmp_folder_local }}\/index.html"
+        dest: "{{ tmp_folder }}\/data\/letsencrypt-site\/"
+        mode: '0644'
+
+#Создаем временный nginx контейнер для получения сертификата Let's Encrypt
+    - name: Create a nginx-tmp container
+      docker_container:
+        name: nginx-tmp
+        image: nginx
+        state: started
+        volumes:
+          - "{{ tmp_folder }}\/nginx.conf:\/etc\/nginx\/nginx.conf"
+          - "{{ tmp_folder }}\/data\/letsencrypt-site\/:\/usr\/share\/nginx\/html"
+        ports:
+          - "80:80"
+#Стартуем контейнер certbot для для получения сертификата
+    - name: Create a certbot container
+      docker_container:
+        name: certbot
+        image: certbot/certbot
+        state: started
+        volumes:
+         - "{{ tmp_folder }}\/etc\/letsencrypt:\/etc\/letsencrypt"
+         - "{{ tmp_folder }}\/var\/lib\/letsencrypt:\/var\/lib\/letsencrypt"
+         - "{{ tmp_folder }}\/data\/letsencrypt-site:\/data\/letsencrypt"
+        command: certonly --webroot --agree-tos --register-unsafely-without-email --webroot-path=/data/letsencrypt -d devops-info.ml
+#Пауза 1 минута для разворачивания временныз контейнеров
+    - name: Pause for 1 minutes to build nginx-tmp and certbot
+      pause:
+        minutes: 1
+#Удаляем временный nginx контейнер
+    - name: Stop and remove nginx-tmp container
+      docker_container: 
+        name: nginx-tmp
+        state: absent
+#Удаляем certbot контейнер
+    - name: Stop and remove nginx-tmp container
+      docker_container: 
+        name: certbot
+        state: absent
