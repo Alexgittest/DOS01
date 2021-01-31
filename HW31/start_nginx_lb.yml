@@ -1,0 +1,48 @@
+---
+ - name: Start nginx Loadbalancer with ssl certificate and start 3 Adminer(as app) container
+   hosts: localhost
+   become: yes
+
+   vars:
+   - tmp_folder: /usr/nginx-lb # directory on remote host for store docker-compose.yml
+   - tmp_folder_local: /TEST/ansible/NGINX_LB_ADMINER # directory on local host with docker-compose.yml
+ 
+   tasks:
+    - name: Enable Docker
+      systemd:
+          name: docker
+          state: started
+#Создать папку на удаленном компьютере для копирования docker-compose.yml
+    - name: Create tmp folder for docker-compose.yml
+      file: 
+        path: "{{tmp_folder}}"
+        state: directory
+        mode: 0755
+
+#Копируем docker-compose.yml на удаленный компьютер
+    - name: Copy docker-compose.yml to remote
+      ansible.builtin.copy:
+        src: "{{ tmp_folder_local }}\/docker-compose.yml"
+        dest: "{{ tmp_folder }}"
+        mode: '0644'
+
+#Копируем Dockerfile на удаленный компьютер
+    - name: Copy Dockerfile to remote
+      ansible.builtin.copy:
+        src: "{{ tmp_folder_local }}\/Dockerfile"
+        dest: "{{ tmp_folder }}"
+        mode: '0644'
+
+#Копируем nginx_ssl.conf на удаленный компьютер        
+    - name: Copy nginx_ssl.conf to remote
+      ansible.builtin.copy:
+        src: "{{ tmp_folder_local }}\/nginx_ssl.conf"
+        dest: "{{ tmp_folder }}\/nginx_ssl.conf"
+        mode: '0644'
+
+
+#Запускаем файл docker-compose.yml с сервисом adminer на разных портах
+    - name: Start services
+      docker_compose:
+        project_src: "{{ tmp_folder }}"
+        state: present
