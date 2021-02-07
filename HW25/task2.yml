@@ -1,0 +1,43 @@
+---
+ - name: Install Docker
+   hosts: CentosVM2
+   become: yes
+ 
+   tasks:
+    - name: Install yum-utils
+      yum:
+       name: yum-utils
+       state: latest
+
+    - name: Download Docker repo
+      get_url: 
+        url: https://download.docker.com/linux/centos/docker-ce.repo
+        dest: /etc/yum.repos.d
+        mode: 644
+
+    - name: Install Docker
+      yum:
+       name: 
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
+       state: latest	 
+
+    - name: Get OS
+      shell: uname -s
+      register: os_version
+    
+    - name: Get architecture
+      shell: uname -m
+      register: architecture
+ 
+    - name: Download Docker-compose
+      get_url: 
+       url: "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-{{ os_version.stdout }}-{{ architecture.stdout }}"
+       dest: /usr/local/bin/docker-compose
+       mode: 744
+
+    - name: Enable Docker
+      systemd:
+          name: docker
+          state: started

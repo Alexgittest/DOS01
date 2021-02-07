@@ -1,0 +1,1 @@
+ansible all -m ansible.builtin.yum -a "name=nginx state=latest" -b -K

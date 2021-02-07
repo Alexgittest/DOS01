@@ -1,0 +1,27 @@
+---
+ - name: Run Vote app
+   hosts: CentosVM2
+   become: yes
+ 
+   tasks:
+    - name: Install Git
+      yum:
+       name: git
+       state: latest
+
+    - name: Create folder
+      file: 
+        path: /voting-app
+        state: directory
+        mode: 0755
+
+    - name: Git clone repo
+      git:
+       clone: yes
+       dest: /voting-app
+       repo: https://github.com/dockersamples/example-voting-app.git
+
+    - name: Docker compose run
+      docker_compose: 
+          project_src: /voting-app
+          state: present
