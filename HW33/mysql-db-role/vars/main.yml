@@ -1,0 +1,4 @@
+---
+# vars file for mysql-db-role
+ansible_sudo_pass: alex
+destination_folder: /etc/mysql/mysql.conf.d

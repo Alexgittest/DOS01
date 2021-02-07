@@ -1,0 +1,35 @@
+---
+# tasks file for mysql-db-role
+  - name: Update cache and install packages
+    apt:
+      name: 
+       - mysql-server
+      update_cache: yes
+      state: latest
+
+  - name: generating mysqld.cnf
+    template: src=mysqld.cnf.j2 dest={{destination_folder}}/mysqld.cnf mode=0544
+
+  - name: copy root my.cnf
+    copy: src=my.cnf_root dest=/root/.my.cnf mode=0544
+
+  - name: Start service mysql, if not started
+    service:
+      name: mysql
+      state: started
+
+  - name: copy shop.sql
+    copy: src=shop.sql dest=/tmp/db/shop.sql mode=0544
+
+  - name: Create database user alex with and password 'alex' with all database privileges
+    mysql_user:
+      name: alex
+      password: alex
+      priv: '*.*:ALL'
+      state: present
+
+  - name: Import shop.sql
+    mysql_db:
+      state: import
+      name: shop
+      target: /tmp/db/shop.sql

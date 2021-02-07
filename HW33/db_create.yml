@@ -1,0 +1,35 @@
+---
+ - name: Start Mysql
+   hosts: UbuntuVM2
+   become: yes
+
+   vars:
+   - tmp_folder: /tmp/db # directory on remote host for store docker-compose.yml
+   - tmp_folder_local: /TEST/ansible/DB # directory on local host with docker-compose.yml
+   - root_pass_db: root
+ 
+   tasks:
+
+#MASTER DB 
+    - name: Create DB
+      command: "mysql -h 172.18.0.2 -u root --password={{ root_pass_db }} -e \"Create database shop;\"" 
+
+    - name: Copy db shop dump to master
+      shell: "mysql -h 172.18.0.2 -u root --password={{ root_pass_db }} shop < shop.sql"
+      args:
+          chdir: "{{ tmp_folder }}"
+
+    - name: Create user for replication
+      command: "mysql -h 172.18.0.2 -u root --password={{ root_pass_db }} -e \"CREATE USER 'replica'@'%' IDENTIFIED BY 'replica';GRANT REPLICATION SLAVE ON *.* TO 'replica'@'%'; FLUSH PRIVILEGES;\""
+
+#SLAVE1 DB
+    - name: Create replication config
+      command: "mysql -h 172.18.0.3 -u root --password={{ root_pass_db }} -e \"CHANGE MASTER TO MASTER_HOST='172.18.0.2', MASTER_USER='replica', MASTER_PASSWORD='replica';start slave;\""
+
+#SLAVE2 DB 
+    - name: Create replication config
+      command: "mysql -h 172.18.0.4 -u root --password={{ root_pass_db }} -e \"CHANGE MASTER TO MASTER_HOST='172.18.0.2', MASTER_USER='replica', MASTER_PASSWORD='replica';start slave;\""	
+
+
+
+

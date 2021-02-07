@@ -1,0 +1,7 @@
+---
+ - name: Install mysql
+   hosts: UbuntuVM2
+   become: yes
+
+   roles:
+     - mysql-db-role
