@@ -1,0 +1,50 @@
+version: "3"
+
+services:
+ db_master:
+    build:
+      context: /tmp/db
+      dockerfile: Dockerfile_master
+    container_name: db_master
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    networks:
+      backend:
+       ipv4_address: 172.18.0.2
+
+ db_slave1:
+    build:
+      context: /tmp/db      
+      dockerfile: Dockerfile_slave1
+    container_name: db_slave1
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    networks:
+      backend:
+       ipv4_address: 172.18.0.3
+
+ db_slave2:
+    build:
+      context: /tmp/db
+      dockerfile: Dockerfile_slave2
+    container_name: db_slave2
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    networks:
+      backend:
+       ipv4_address: 172.18.0.4
+
+networks:
+   backend:
+     driver: bridge
+     ipam:
+        driver: default
+        config:
+         - subnet: 172.18.0.0/16
+           gateway: 172.18.0.1

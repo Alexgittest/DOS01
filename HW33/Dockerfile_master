@@ -1,0 +1,4 @@
+FROM mysql:latest
+COPY ./my.cnf_master /etc/mysql/my.cnf
+COPY ./shop.sql /etc/mysql/shop.sql 
+RUN mkdir -p /var/log/mysql
