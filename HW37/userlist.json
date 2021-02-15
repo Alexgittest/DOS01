@@ -1,0 +1,9 @@
+{
+"userList": {
+    "users": [
+        {"name": "Ivan","email": "ivan@gmail.com"},
+        {"name": "Vasya","email": "vasya@mail.ru"}
+     ]
+  }
+}
+
