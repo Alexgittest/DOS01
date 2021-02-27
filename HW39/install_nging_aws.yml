@@ -1,0 +1,8 @@
+---
+ - name: Install nginx
+   hosts: aws1
+   become: yes
+
+   tasks:
+    - name: Install nginx
+      apt: name=nginx state=present
