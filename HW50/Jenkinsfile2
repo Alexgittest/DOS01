@@ -1,0 +1,57 @@
+pipeline {
+    environment {
+	JENKINS_IP="3.121.181.122:8080"
+	USERNAME="Aleks"
+	
+	AWS_ACCESS_KEY_ID=credentials('AWS_ACCESS_KEY_ID')
+	AWS_SECRET_ACCESS_KEY=credentials('AWS_SECRET_ACCESS_KEY')
+	ALEKS_API_TOKEN=credentials('ALEKS_API_TOKEN')
+	
+	URL1="http://${USERNAME}:${ALEKS_API_TOKEN}@${JENKINS_IP}/job/${JOB_NAME}/"
+    }
+    tools { terraform 'terraform-14' }
+    agent any
+    stages {
+        stage('Git checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/Alexgittest/Terraformtest.git'
+            }
+        }
+        stage('Terraform init') {
+            steps {
+                sh 'terraform init'
+            }
+        }
+        stage('Terraform plan') {
+            steps {
+                sh 'terraform plan'
+            }
+        }
+	stage('Slack send ') {
+		steps {
+			slackSend (botUser:true, channel: "#jenkins", 
+				blocks: [
+					[
+					"type": "section",
+					"text": [
+					"type": "mrkdwn",
+					"text": " Copy this link to CMD and use curl -x POST \n For Continue  - <${URL1}${BUILD_NUMBER}/input/Choise/proceedEmpty| Proceed> \n for abort -- <${URL1}${BUILD_NUMBER}/input/Choise/abort| Abort>"
+						]
+					]
+				]
+			)
+			}
+		}
+        stage('Terraform apply') {
+		input {
+			message 'Apply plan ?'
+			id 'choise'
+			ok 'Apply'
+		}
+            steps {
+                sh 'terraform apply'
+            }
+        }
+    }
+}
+
